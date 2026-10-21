@@ -29,6 +29,9 @@ namespace ui = ImGui;
 #ifndef XOVIUM_MESH_IMPORT_DEFAULT
 #define XOVIUM_MESH_IMPORT_DEFAULT "mesh-import"
 #endif
+#ifndef XOVIUM_MODEL_TOOL_DEFAULT
+#define XOVIUM_MODEL_TOOL_DEFAULT "xovium-model-tool"
+#endif
 static const ImVec4 accent{.25f, .75f, .67f, 1}, muted{.52f, .61f, .66f, 1};
 struct Result {
     int code = 0;
@@ -188,7 +191,7 @@ struct MeshView {
     Texture2D texture{};
 };
 struct Editor {
-    fs::path root, workspace, helper, savedFile;
+    fs::path root, workspace, helper, modelTool, savedFile;
     Json doc, catalog;
     std::vector<MeshView> meshes;
     std::vector<Json> undo, redo;
@@ -218,6 +221,8 @@ struct Editor {
     Editor(fs::path source) : root(std::move(source)) {
         helper = getenv("XOVIUM_MESH_IMPORT") ? getenv("XOVIUM_MESH_IMPORT")
                                               : XOVIUM_MESH_IMPORT_DEFAULT;
+        modelTool = getenv("XOVIUM_MODEL_TOOL") ? getenv("XOVIUM_MODEL_TOOL")
+                                               : XOVIUM_MODEL_TOOL_DEFAULT;
         workspace = temporary();
     }
     ~Editor() {
@@ -238,7 +243,7 @@ struct Editor {
             fs::remove_all(taskWorkspace, ec);
     }
     std::vector<std::string> backend(std::vector<std::string> args) {
-        std::vector<std::string> c = {"python3", "-B", (root / "backend/editor.py").string()};
+        std::vector<std::string> c = {modelTool.string(), "--root", root.string()};
         c.insert(c.end(), args.begin(), args.end());
         return c;
     }

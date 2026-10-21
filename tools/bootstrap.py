@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 """Fetch exact upstream commits into a local, reusable source cache."""
+import argparse
 import json
 import os
 from pathlib import Path
@@ -11,6 +12,11 @@ import tempfile
 ROOT = Path(__file__).resolve().parent.parent
 DEPS = Path(os.environ.get('XOVIUM_DEPS_DIR', ROOT / '.build/deps')).resolve()
 CATALOG = json.loads((ROOT / 'app/dependencies.json').read_text())
+parser = argparse.ArgumentParser(description=__doc__)
+parser.add_argument('--backend-only', action='store_true', help='Prepare only the JSON dependency for native command line tools')
+args = parser.parse_args()
+if args.backend_only:
+    CATALOG = {'json': CATALOG['json']}
 # Reuse only matching stamped sources. The editor remains independently buildable.
 CACHE_ROOTS = [ROOT.parent / 'xovium-installer/.build/deps']
 if os.environ.get('XOVIUM_SOURCE_CACHE'):

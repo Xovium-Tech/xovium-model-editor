@@ -3,41 +3,64 @@ project(xovium_model_editor VERSION 0.1.0 LANGUAGES C CXX)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
+option(XOVIUM_BUILD_GUI "Build the desktop editor in addition to headless tools" ON)
 set(XOVIUM_DEPS_DIR "${CMAKE_CURRENT_SOURCE_DIR}/.build/deps" CACHE PATH "Pinned source dependencies")
-foreach(dependency raylib imgui rlImGui ImGuizmo json)
+set(XOVIUM_DEPENDENCIES json)
+if(XOVIUM_BUILD_GUI)
+    list(APPEND XOVIUM_DEPENDENCIES raylib imgui rlImGui ImGuizmo)
+endif()
+foreach(dependency IN LISTS XOVIUM_DEPENDENCIES)
     if(NOT EXISTS "${XOVIUM_DEPS_DIR}/${dependency}/.xovium-commit")
         message(FATAL_ERROR "Missing ${dependency}; run ./build.sh to prepare pinned dependencies")
     endif()
 endforeach()
-set(BUILD_EXAMPLES OFF CACHE BOOL "" FORCE)
-set(BUILD_GAMES OFF CACHE BOOL "" FORCE)
-set(GLFW_BUILD_WAYLAND OFF CACHE BOOL "" FORCE)
-add_subdirectory("${XOVIUM_DEPS_DIR}/raylib" "${CMAKE_CURRENT_BINARY_DIR}/raylib" EXCLUDE_FROM_ALL)
-add_library(imgui STATIC
-    "${XOVIUM_DEPS_DIR}/imgui/imgui.cpp"
-    "${XOVIUM_DEPS_DIR}/imgui/imgui_draw.cpp"
-    "${XOVIUM_DEPS_DIR}/imgui/imgui_tables.cpp"
-    "${XOVIUM_DEPS_DIR}/imgui/imgui_widgets.cpp")
-target_include_directories(imgui PUBLIC "${XOVIUM_DEPS_DIR}/imgui")
-add_library(rlImGui STATIC "${XOVIUM_DEPS_DIR}/rlImGui/rlImGui.cpp")
-target_include_directories(rlImGui PUBLIC "${XOVIUM_DEPS_DIR}/rlImGui")
-target_link_libraries(rlImGui PUBLIC raylib imgui)
-add_library(imguizmo STATIC "${XOVIUM_DEPS_DIR}/ImGuizmo/src/ImGuizmo.cpp")
-target_include_directories(imguizmo PUBLIC "${XOVIUM_DEPS_DIR}/ImGuizmo/src")
-target_link_libraries(imguizmo PUBLIC imgui)
 add_library(xovium_json INTERFACE)
 target_include_directories(xovium_json INTERFACE "${XOVIUM_DEPS_DIR}/json/single_include")
 find_package(assimp CONFIG REQUIRED)
 find_package(PNG REQUIRED)
+find_package(tinyxml2 CONFIG REQUIRED)
+find_package(LibArchive REQUIRED)
 add_executable(mesh-import tools/mesh_import.cpp)
 target_link_libraries(mesh-import PRIVATE assimp::assimp PNG::PNG xovium_json)
 target_compile_options(mesh-import PRIVATE -Wall -Wextra -Wpedantic)
-add_executable(xovium-model-editor app/main.cpp)
-target_link_libraries(xovium-model-editor PRIVATE rlImGui imguizmo xovium_json)
-# Keep upstream raymath C-style aggregate initializers out of application diagnostics.
-target_include_directories(xovium-model-editor SYSTEM PRIVATE "${XOVIUM_DEPS_DIR}/raylib/src")
-target_compile_definitions(xovium-model-editor PRIVATE
+add_executable(xovium-model-tool backend/main.cpp backend/project.cpp backend/exports.cpp)
+target_link_libraries(xovium-model-tool PRIVATE xovium_json tinyxml2::tinyxml2 LibArchive::LibArchive)
+target_compile_definitions(xovium-model-tool PRIVATE
     XOVIUM_SOURCE_DIR="${CMAKE_CURRENT_SOURCE_DIR}"
+    XOVIUM_VERSION="${PROJECT_VERSION}"
     XOVIUM_MESH_IMPORT_DEFAULT="${CMAKE_CURRENT_BINARY_DIR}/mesh-import")
-target_compile_options(xovium-model-editor PRIVATE -Wall -Wextra -Wpedantic)
-add_dependencies(xovium-model-editor mesh-import)
+target_compile_options(xovium-model-tool PRIVATE -Wall -Wextra -Wpedantic)
+add_dependencies(xovium-model-tool mesh-import)
+install(TARGETS xovium-model-tool mesh-import RUNTIME DESTINATION bin COMPONENT Runtime)
+install(FILES backend/sensors.json DESTINATION share/xovium-model-editor/backend COMPONENT Runtime)
+install(FILES schema/model.schema.json DESTINATION share/xovium-model-editor/schema COMPONENT Runtime)
+install(FILES LICENSE THIRD_PARTY.md DESTINATION share/xovium-model-editor COMPONENT Runtime)
+if(XOVIUM_BUILD_GUI)
+    set(BUILD_EXAMPLES OFF CACHE BOOL "" FORCE)
+    set(BUILD_GAMES OFF CACHE BOOL "" FORCE)
+    set(GLFW_BUILD_WAYLAND OFF CACHE BOOL "" FORCE)
+    add_subdirectory("${XOVIUM_DEPS_DIR}/raylib" "${CMAKE_CURRENT_BINARY_DIR}/raylib" EXCLUDE_FROM_ALL)
+    add_library(imgui STATIC
+        "${XOVIUM_DEPS_DIR}/imgui/imgui.cpp"
+        "${XOVIUM_DEPS_DIR}/imgui/imgui_draw.cpp"
+        "${XOVIUM_DEPS_DIR}/imgui/imgui_tables.cpp"
+        "${XOVIUM_DEPS_DIR}/imgui/imgui_widgets.cpp")
+    target_include_directories(imgui PUBLIC "${XOVIUM_DEPS_DIR}/imgui")
+    add_library(rlImGui STATIC "${XOVIUM_DEPS_DIR}/rlImGui/rlImGui.cpp")
+    target_include_directories(rlImGui PUBLIC "${XOVIUM_DEPS_DIR}/rlImGui")
+    target_link_libraries(rlImGui PUBLIC raylib imgui)
+    add_library(imguizmo STATIC "${XOVIUM_DEPS_DIR}/ImGuizmo/src/ImGuizmo.cpp")
+    target_include_directories(imguizmo PUBLIC "${XOVIUM_DEPS_DIR}/ImGuizmo/src")
+    target_link_libraries(imguizmo PUBLIC imgui)
+    add_executable(xovium-model-editor app/main.cpp)
+    target_link_libraries(xovium-model-editor PRIVATE rlImGui imguizmo xovium_json)
+    # Keep upstream raymath C-style aggregate initializers out of application diagnostics.
+    target_include_directories(xovium-model-editor SYSTEM PRIVATE "${XOVIUM_DEPS_DIR}/raylib/src")
+    target_compile_definitions(xovium-model-editor PRIVATE
+        XOVIUM_SOURCE_DIR="${CMAKE_CURRENT_SOURCE_DIR}"
+        XOVIUM_MESH_IMPORT_DEFAULT="${CMAKE_CURRENT_BINARY_DIR}/mesh-import"
+        XOVIUM_MODEL_TOOL_DEFAULT="${CMAKE_CURRENT_BINARY_DIR}/xovium-model-tool")
+    target_compile_options(xovium-model-editor PRIVATE -Wall -Wextra -Wpedantic)
+    add_dependencies(xovium-model-editor mesh-import xovium-model-tool)
+    install(TARGETS xovium-model-editor RUNTIME DESTINATION bin COMPONENT Runtime)
+endif()

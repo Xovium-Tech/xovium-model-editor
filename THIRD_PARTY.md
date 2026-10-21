@@ -11,5 +11,7 @@ The editor is distributed as source. The build downloads pinned dependencies and
 | nlohmann/json 3.11.3 | MIT | https://github.com/nlohmann/json |
 | Assimp (system package) | BSD 3-Clause | https://github.com/assimp/assimp |
 | libpng (system package) | libpng-2.0 | https://github.com/pnggroup/libpng |
+| tinyxml2 (system package) | zlib | https://github.com/leethomason/tinyxml2 |
+| libarchive (system package) | BSD 2-Clause and component licenses | https://github.com/libarchive/libarchive |
 
 See `app/dependencies.json` for exact downloaded revisions. Imported vehicle models, meshes and textures remain subject to their original licenses; importing or exporting them does not relicense them. Preserve their source license notices when sharing a project. The editor includes no PX4, Gazebo Fuel, Unreal or NVIDIA model assets in its repository.

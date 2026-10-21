@@ -3,7 +3,7 @@
 [![CI](https://github.com/Xovium-Tech/xovium-model-editor/actions/workflows/ci.yml/badge.svg)](https://github.com/Xovium-Tech/xovium-model-editor/actions/workflows/ci.yml)
 [![Latest release](https://img.shields.io/github/v/release/Xovium-Tech/xovium-model-editor)](https://github.com/Xovium-Tech/xovium-model-editor/releases/latest)
 
-A desktop vehicle editor for Xovium. Open an existing vehicle or import a 3D asset, attach sensors, move and rotate their mounting points in 3D, and save a portable `.xovmodel` project or export simulator assets.
+A C++ desktop vehicle editor and headless model converter for Xovium. Open an existing vehicle or import a 3D asset, attach sensors, move and rotate their mounting points in 3D, and save a portable `.xovmodel` project or export simulator assets.
 
 ## Supported formats and platforms
 
@@ -22,11 +22,11 @@ Every export contains `report.json` describing native components, retained metad
 
 ```bash
 sudo apt update
-sudo apt install build-essential cmake git python3 pkg-config libassimp-dev libpng-dev \
+sudo apt install build-essential cmake git python3 pkg-config libassimp-dev libpng-dev libtinyxml2-dev libarchive-dev \
   libx11-dev libxrandr-dev libxi-dev libxcursor-dev libxinerama-dev libgl1-mesa-dev
 ```
 
-Zenity is optional for native file dialogs (`sudo apt install zenity`); paths can also be entered directly. Build scripts download pinned raylib, Dear ImGui, rlImGui, ImGuizmo and nlohmann/json sources. They do not install system packages or require Blender, Isaac, Unreal or Gazebo to run the editor.
+Zenity is optional for native file dialogs (`sudo apt install zenity`); paths can also be entered directly. Build scripts download pinned raylib, Dear ImGui, rlImGui, ImGuizmo and nlohmann/json sources. They do not install system packages or require Blender, Isaac, Unreal or Gazebo to run the editor. Python is used only by the build dependency bootstrap. The editor and model conversion backend run as compiled C++ programs; Unreal exports include a Python script for Unreal Editor’s own scripting interface.
 
 ## 2. Get the source and build
 
@@ -36,14 +36,33 @@ cd xovium-model-editor
 ./build.sh
 ```
 
-The editor and mesh importer are built in `.build/cmake`. To keep build outputs elsewhere:
+The editor, `xovium-model-tool` and `mesh-import` are built in `.build/cmake`. To keep build outputs elsewhere:
 
 ```bash
 XOVIUM_BUILD_DIR=../xov-tests/model-editor/build \
 XOVIUM_DEPS_DIR=../xov-tests/model-editor/deps ./build.sh
 ```
 
-Use the same environment variables with `run.sh` when using a custom build directory.
+Use the same environment variables with `run.sh` when using a custom build directory. The launcher checks source and binary content hashes, reusing a current build without Python or compiler tools. Changed sources, missing executables or modified binaries trigger a rebuild; documentation-only edits do not.
+
+For a converter without a desktop or display dependencies:
+
+```bash
+./build.sh --backend-only
+.build/backend/xovium-model-tool --root "$PWD" --help
+```
+
+This builds only the model tool and mesh importer, and downloads only nlohmann/json. It needs the common build packages above, without the X11/OpenGL packages. `run.sh --cli` reuses current desktop command line tools when available, otherwise builds this headless configuration. CMake also accepts `-DXOVIUM_BUILD_GUI=OFF`.
+
+To stage compiled runtime files separately from the sources:
+
+```bash
+cmake --install .build/backend --prefix /path/to/model-tool --component Runtime
+/path/to/model-tool/bin/xovium-model-tool \
+  --root /path/to/model-tool/share/xovium-model-editor catalog
+```
+
+The runtime contains the two executables and `backend/sensors.json`, plus the JSON schema and license notices. Keep the binaries together or set `XOVIUM_MESH_IMPORT` to the mesh importer. System Assimp, libpng, tinyxml2 and libarchive libraries remain required. Installed runtime commands do not invoke Python or the build scripts.
 
 ## 3. Use the editor
 
@@ -54,7 +73,7 @@ Use the same environment variables with `run.sh` when using a custom build direc
 ./run.sh /path/to/vehicle.xovmodel
 ```
 
-1. Choose **New** or **Open model**. Existing Xovium vehicles are under `xovium/shared/models/cessna/source/model.sdf` and `xovium/shared/models/rover/source/model.sdf`.
+1. Choose **New** or **Open model**. Existing Xovium projects are under `xovium/shared/models/cessna/model.xovmodel` and `xovium/shared/models/rover/model.xovmodel`; the original SDF sources remain in each vehicle’s `source` folder.
 2. Add airspeed, GPS/GNSS, barometer, IMU, magnetometer, RGB camera, depth camera, LiDAR or contact sensors. Select the parent link in the inspector.
 3. Use **Move** or **Rotate** handles in the viewport, or enter position and rotation values. Local/world handles and snapping are available. Camera frustums and the camera preview show the mounting direction.
 4. Set sampling rate, topic and sensor-specific parameters. Add simulator plugin XML when the target simulator provides the corresponding plugin library.
@@ -80,11 +99,13 @@ Targets are `gazebo`, `isaac`, `sih`, `unreal` and `flightgear`. Use `./run.sh -
 
 `.xovmodel` is a ZIP bundle containing versioned `project.json` and local assets. The document stores links, visuals, inertial properties, sensors, plugins and optional joints. Imported SDF is retained for dynamics and extension settings. The JSON schema is in [schema/model.schema.json](schema/model.schema.json).
 
-A Gazebo export can be selected as a custom `model.sdf` in Xovium Installer. The current installer converts geometry and uses its chosen Cessna/rover dynamics adapter for native simulators; it does not automatically translate arbitrary sensor plugins. Use each export report to configure the simulator's sensor systems and bridge routing.
+Save edits directly to a model’s `.xovmodel` file in `xovium/shared/models`. Before each simulator starts, Xovium checks bundle, converter and adapter hashes and verifies generated files. Missing or outdated conversions are rebuilt for that simulator; unchanged outputs are reused. A conversion failure stops startup and leaves the previous model intact.
+
+For a new vehicle, select its `.xovmodel` as the custom model in Xovium Installer and choose the Cessna or rover dynamics adapter. The installer stores it at `shared/models/custom/model.xovmodel`. Extra bundles placed under `shared/models` are also converted into the simulator model library; the installer’s shared model selection determines which vehicle launches. Gazebo uses native SDF definitions. Other simulators retain their chosen dynamics adapter, and Isaac cameras retain their edited mounting transforms; arbitrary sensor plugins still require runtime integration. Use each export report for sensor support and bridge routing requirements.
 
 ## Validation
 
-CI builds the editor/importer on Ubuntu 24.04, checks source syntax, and exercises mesh import, validation, portable save and Gazebo export. Local validation also covers actual PX4 Cessna/rover imports, native SDF parsing, USD camera transforms, texture packaging and interactive viewport controls. Simulator runtime behavior requires testing in the corresponding simulator.
+CI builds both the desktop editor and headless C++ tools on Ubuntu 24.04, checks build-script syntax, and exercises native mesh import, validation, portable save/reopen and Gazebo export. Local validation also covers actual PX4 Cessna/rover imports, native SDF parsing, USD camera transforms, texture packaging and interactive viewport controls. Simulator runtime behavior requires testing in the corresponding simulator.
 
 ## Limitations
 
