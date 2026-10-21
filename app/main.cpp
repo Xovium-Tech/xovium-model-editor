@@ -884,12 +884,14 @@ struct Editor {
                     (*item)["scale"][i] = scale[i];
         } else {
             const char *targets[] = {"gazebo", "isaac", "unreal", "flightgear", "sih"};
+            const char *labels[] = {"Gazebo", "Isaac Sim", "Unreal Engine", "FlightGear",
+                                    "Lightweight viewer"};
             int t = 0;
             for (int i = 0; i < 5; i++)
                 if (item->value("target", "") == targets[i])
                     t = i;
             ui::TextUnformatted("Target");
-            if (ui::Combo("##target", &t, targets, 5))
+            if (ui::Combo("##target", &t, labels, 5))
                 (*item)["target"] = targets[t];
             textField("Library", (*item)["filename"]);
             textField("Plugin XML", (*item)["xml"], 16384, true);
@@ -960,10 +962,13 @@ struct Editor {
                 if (ui::Button("Browse"))
                     browse(!opening && !exporting, exporting);
                 static const char *targets[] = {"gazebo", "isaac", "sih", "unreal", "flightgear"};
+                static const char *labels[] = {"Gazebo", "Isaac Sim", "Lightweight viewer",
+                                               "Unreal Engine", "FlightGear"};
                 if (exporting) {
-                    ui::Combo("Simulator", &exportTarget, targets, 5);
+                    ui::Combo("Simulator", &exportTarget, labels, 5);
                     ui::TextWrapped("Gazebo: native SDF sensors; PX4 routing and world systems "
-                                    "must match. Isaac/SIH: USD geometry and cameras; other sensor "
+                                    "must match. Isaac and lightweight viewer: USD geometry and "
+                                    "cameras; other sensor "
                                     "definitions are retained. Unreal/FlightGear: native geometry "
                                     "plus import/configuration files. Exported metadata requires a "
                                     "runtime adapter to produce measurements.");
