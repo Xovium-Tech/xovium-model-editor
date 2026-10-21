@@ -1,0 +1,700 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:xovium:model:1",
+  "title": "Xovium portable model project",
+  "type": "object",
+  "required": [
+    "format",
+    "version",
+    "name",
+    "vehicle",
+    "frame",
+    "units",
+    "links",
+    "visuals",
+    "sensors",
+    "plugins"
+  ],
+  "properties": {
+    "format": {
+      "const": "xovium-model"
+    },
+    "version": {
+      "const": 1
+    },
+    "name": {
+      "type": "string",
+      "minLength": 1
+    },
+    "vehicle": {
+      "enum": [
+        "fixed-wing",
+        "rover",
+        "custom"
+      ]
+    },
+    "frame": {
+      "const": "FLU"
+    },
+    "units": {
+      "const": "m"
+    },
+    "links": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": [
+          "name",
+          "pose",
+          "mass",
+          "inertia"
+        ],
+        "properties": {
+          "name": {
+            "type": "string",
+            "minLength": 1
+          },
+          "pose": {
+            "type": "array",
+            "minItems": 6,
+            "maxItems": 6,
+            "items": {
+              "type": "number"
+            }
+          },
+          "mass": {
+            "type": "number",
+            "exclusiveMinimum": 0
+          },
+          "inertia": {
+            "type": "array",
+            "minItems": 6,
+            "maxItems": 6,
+            "items": {
+              "type": "number"
+            }
+          },
+          "inertial_pose": {
+            "type": "array",
+            "minItems": 6,
+            "maxItems": 6,
+            "items": {
+              "type": "number"
+            }
+          }
+        }
+      }
+    },
+    "visuals": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "id",
+          "name",
+          "link",
+          "pose",
+          "scale",
+          "geometry"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "name": {
+            "type": "string",
+            "minLength": 1
+          },
+          "link": {
+            "type": "string",
+            "minLength": 1
+          },
+          "pose": {
+            "type": "array",
+            "minItems": 6,
+            "maxItems": 6,
+            "items": {
+              "type": "number"
+            }
+          },
+          "scale": {
+            "type": "array",
+            "minItems": 3,
+            "maxItems": 3,
+            "items": {
+              "type": "number",
+              "exclusiveMinimum": 0
+            }
+          },
+          "geometry": {
+            "oneOf": [
+              {
+                "type": "object",
+                "required": [
+                  "type",
+                  "path"
+                ],
+                "properties": {
+                  "type": {
+                    "const": "mesh"
+                  },
+                  "path": {
+                    "type": "string",
+                    "pattern": "^assets/(?!.*(?:^|/)\\.\\.(?:/|$))[^\\\\:]+$"
+                  }
+                }
+              },
+              {
+                "type": "object",
+                "required": [
+                  "type",
+                  "size"
+                ],
+                "properties": {
+                  "type": {
+                    "const": "box"
+                  },
+                  "size": {
+                    "type": "array",
+                    "minItems": 3,
+                    "maxItems": 3,
+                    "items": {
+                      "type": "number",
+                      "exclusiveMinimum": 0
+                    }
+                  }
+                }
+              },
+              {
+                "type": "object",
+                "required": [
+                  "type",
+                  "radius"
+                ],
+                "properties": {
+                  "type": {
+                    "const": "sphere"
+                  },
+                  "radius": {
+                    "type": "number",
+                    "exclusiveMinimum": 0
+                  }
+                }
+              },
+              {
+                "type": "object",
+                "required": [
+                  "type",
+                  "radius",
+                  "length"
+                ],
+                "properties": {
+                  "type": {
+                    "const": "cylinder"
+                  },
+                  "radius": {
+                    "type": "number",
+                    "exclusiveMinimum": 0
+                  },
+                  "length": {
+                    "type": "number",
+                    "exclusiveMinimum": 0
+                  }
+                }
+              }
+            ]
+          },
+          "color": {
+            "type": "array",
+            "minItems": 4,
+            "maxItems": 4,
+            "items": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 1
+            }
+          },
+          "source_name": {
+            "type": "string",
+            "minLength": 1
+          },
+          "source_link": {
+            "type": "string",
+            "minLength": 1
+          }
+        }
+      }
+    },
+    "sensors": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "id",
+          "name",
+          "type",
+          "parent",
+          "pose",
+          "enabled",
+          "rate_hz",
+          "topic",
+          "parameters"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "name": {
+            "type": "string",
+            "minLength": 1
+          },
+          "type": {
+            "enum": [
+              "airspeed",
+              "gps",
+              "barometer",
+              "imu",
+              "magnetometer",
+              "camera",
+              "depth_camera",
+              "lidar",
+              "contact"
+            ]
+          },
+          "parent": {
+            "type": "string",
+            "minLength": 1
+          },
+          "pose": {
+            "type": "array",
+            "minItems": 6,
+            "maxItems": 6,
+            "items": {
+              "type": "number"
+            }
+          },
+          "enabled": {
+            "type": "boolean"
+          },
+          "rate_hz": {
+            "type": "number",
+            "minimum": 0.01,
+            "maximum": 10000
+          },
+          "topic": {
+            "type": "string"
+          },
+          "parameters": {
+            "type": "object"
+          },
+          "source_name": {
+            "type": "string",
+            "minLength": 1
+          },
+          "source_parent": {
+            "type": "string",
+            "minLength": 1
+          },
+          "xml": {
+            "type": "string"
+          }
+        },
+        "allOf": [
+          {
+            "if": {
+              "properties": {
+                "type": {
+                  "const": "airspeed"
+                }
+              }
+            },
+            "then": {
+              "properties": {
+                "parameters": {
+                  "type": "object",
+                  "properties": {
+                    "noise": {
+                      "type": "number",
+                      "minimum": 0,
+                      "maximum": 100
+                    }
+                  },
+                  "additionalProperties": false
+                }
+              }
+            }
+          },
+          {
+            "if": {
+              "properties": {
+                "type": {
+                  "const": "gps"
+                }
+              }
+            },
+            "then": {
+              "properties": {
+                "parameters": {
+                  "type": "object",
+                  "properties": {
+                    "position_noise": {
+                      "type": "number",
+                      "minimum": 0,
+                      "maximum": 1000
+                    },
+                    "velocity_noise": {
+                      "type": "number",
+                      "minimum": 0,
+                      "maximum": 100
+                    }
+                  },
+                  "additionalProperties": false
+                }
+              }
+            }
+          },
+          {
+            "if": {
+              "properties": {
+                "type": {
+                  "const": "barometer"
+                }
+              }
+            },
+            "then": {
+              "properties": {
+                "parameters": {
+                  "type": "object",
+                  "properties": {
+                    "pressure_noise": {
+                      "type": "number",
+                      "minimum": 0,
+                      "maximum": 10000
+                    }
+                  },
+                  "additionalProperties": false
+                }
+              }
+            }
+          },
+          {
+            "if": {
+              "properties": {
+                "type": {
+                  "const": "imu"
+                }
+              }
+            },
+            "then": {
+              "properties": {
+                "parameters": {
+                  "type": "object",
+                  "properties": {
+                    "accel_noise": {
+                      "type": "number",
+                      "minimum": 0,
+                      "maximum": 100
+                    },
+                    "gyro_noise": {
+                      "type": "number",
+                      "minimum": 0,
+                      "maximum": 100
+                    }
+                  },
+                  "additionalProperties": false
+                }
+              }
+            }
+          },
+          {
+            "if": {
+              "properties": {
+                "type": {
+                  "const": "magnetometer"
+                }
+              }
+            },
+            "then": {
+              "properties": {
+                "parameters": {
+                  "type": "object",
+                  "properties": {
+                    "noise": {
+                      "type": "number",
+                      "minimum": 0,
+                      "maximum": 100
+                    }
+                  },
+                  "additionalProperties": false
+                }
+              }
+            }
+          },
+          {
+            "if": {
+              "properties": {
+                "type": {
+                  "const": "camera"
+                }
+              }
+            },
+            "then": {
+              "properties": {
+                "parameters": {
+                  "type": "object",
+                  "properties": {
+                    "width": {
+                      "type": "integer",
+                      "minimum": 1,
+                      "maximum": 16384
+                    },
+                    "height": {
+                      "type": "integer",
+                      "minimum": 1,
+                      "maximum": 16384
+                    },
+                    "horizontal_fov": {
+                      "type": "number",
+                      "minimum": 0.01,
+                      "maximum": 3.1415926535
+                    },
+                    "near": {
+                      "type": "number",
+                      "minimum": 0.001,
+                      "maximum": 100000
+                    },
+                    "far": {
+                      "type": "number",
+                      "minimum": 0.002,
+                      "maximum": 1000000
+                    }
+                  },
+                  "additionalProperties": false
+                }
+              }
+            }
+          },
+          {
+            "if": {
+              "properties": {
+                "type": {
+                  "const": "depth_camera"
+                }
+              }
+            },
+            "then": {
+              "properties": {
+                "parameters": {
+                  "type": "object",
+                  "properties": {
+                    "width": {
+                      "type": "integer",
+                      "minimum": 1,
+                      "maximum": 16384
+                    },
+                    "height": {
+                      "type": "integer",
+                      "minimum": 1,
+                      "maximum": 16384
+                    },
+                    "horizontal_fov": {
+                      "type": "number",
+                      "minimum": 0.01,
+                      "maximum": 3.1415926535
+                    },
+                    "near": {
+                      "type": "number",
+                      "minimum": 0.001,
+                      "maximum": 100000
+                    },
+                    "far": {
+                      "type": "number",
+                      "minimum": 0.002,
+                      "maximum": 1000000
+                    }
+                  },
+                  "additionalProperties": false
+                }
+              }
+            }
+          },
+          {
+            "if": {
+              "properties": {
+                "type": {
+                  "const": "lidar"
+                }
+              }
+            },
+            "then": {
+              "properties": {
+                "parameters": {
+                  "type": "object",
+                  "properties": {
+                    "horizontal_samples": {
+                      "type": "integer",
+                      "minimum": 1,
+                      "maximum": 65536
+                    },
+                    "horizontal_min_angle": {
+                      "type": "number",
+                      "minimum": -6.2831853072,
+                      "maximum": 6.2831853072
+                    },
+                    "horizontal_max_angle": {
+                      "type": "number",
+                      "minimum": -6.2831853072,
+                      "maximum": 6.2831853072
+                    },
+                    "vertical_samples": {
+                      "type": "integer",
+                      "minimum": 1,
+                      "maximum": 4096
+                    },
+                    "vertical_min_angle": {
+                      "type": "number",
+                      "minimum": -1.5707963268,
+                      "maximum": 1.5707963268
+                    },
+                    "vertical_max_angle": {
+                      "type": "number",
+                      "minimum": -1.5707963268,
+                      "maximum": 1.5707963268
+                    },
+                    "min_range": {
+                      "type": "number",
+                      "minimum": 0,
+                      "maximum": 100000
+                    },
+                    "max_range": {
+                      "type": "number",
+                      "minimum": 0.001,
+                      "maximum": 1000000
+                    }
+                  },
+                  "additionalProperties": false
+                }
+              }
+            }
+          },
+          {
+            "if": {
+              "properties": {
+                "type": {
+                  "const": "contact"
+                }
+              }
+            },
+            "then": {
+              "properties": {
+                "parameters": {
+                  "type": "object",
+                  "properties": {
+                    "collision": {
+                      "type": "string"
+                    }
+                  },
+                  "additionalProperties": false
+                }
+              }
+            }
+          }
+        ]
+      }
+    },
+    "plugins": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "id",
+          "name",
+          "target",
+          "filename",
+          "xml"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "name": {
+            "type": "string",
+            "minLength": 1
+          },
+          "target": {
+            "type": "string",
+            "minLength": 1
+          },
+          "filename": {
+            "type": "string"
+          },
+          "xml": {
+            "type": "string",
+            "minLength": 1
+          },
+          "parent": {
+            "type": "string",
+            "minLength": 1
+          }
+        }
+      }
+    },
+    "joints": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "name",
+          "type",
+          "parent",
+          "child",
+          "pose"
+        ],
+        "properties": {
+          "name": {
+            "type": "string",
+            "minLength": 1
+          },
+          "type": {
+            "type": "string",
+            "minLength": 1
+          },
+          "parent": {
+            "type": "string",
+            "minLength": 1
+          },
+          "child": {
+            "type": "string",
+            "minLength": 1
+          },
+          "pose": {
+            "type": "array",
+            "minItems": 6,
+            "maxItems": 6,
+            "items": {
+              "type": "number"
+            }
+          },
+          "xml": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "source_sdf": {
+      "type": "string",
+      "pattern": "^assets/(?!.*(?:^|/)\\.\\.(?:/|$))[^\\\\:]+$"
+    },
+    "warnings": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    }
+  },
+  "$comment": "Runtime validation also enforces finite values, unique IDs/entity names, valid link references, positive definite inertia, parameter ordering and safe portable asset paths. Gazebo system plugins may share class names and remain distinguished by stable IDs."
+}

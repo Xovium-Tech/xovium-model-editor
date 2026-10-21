@@ -1,0 +1,14 @@
+.build/
+build/
+build-*/
+dist/
+__pycache__/
+*.py[cod]
+*.o
+*.a
+*.so
+*.log
+*.xovmodel
+compile_commands.json
+CMakeCache.txt
+CMakeFiles/

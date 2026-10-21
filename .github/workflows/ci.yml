@@ -1,0 +1,47 @@
+name: CI
+on:
+  push:
+  pull_request:
+permissions:
+  contents: read
+jobs:
+  ubuntu:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+      - name: Install build dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends build-essential cmake git python3 pkg-config libassimp-dev libpng-dev libx11-dev libxrandr-dev libxi-dev libxcursor-dev libxinerama-dev libgl1-mesa-dev
+      - name: Check sources
+        run: |
+          bash -n build.sh run.sh
+          python3 - <<'PY'
+          import ast
+          from pathlib import Path
+          for folder in ('backend', 'tools'):
+              for source in Path(folder).rglob('*.py'):
+                  ast.parse(source.read_text(), filename=str(source))
+          PY
+      - name: Build editor and importer
+        run: ./build.sh
+      - name: Check backend command line
+        run: python3 -B backend/editor.py --help
+      - name: Import, save and export a portable project
+        env:
+          XOVIUM_MESH_IMPORT: ${{ github.workspace }}/.build/cmake/mesh-import
+        run: |
+          smoke_dir="$(dirname "$GITHUB_WORKSPACE")/xov-tests/model-editor-ci"
+          mkdir -p "$smoke_dir"
+          cat > "$smoke_dir/triangle.obj" <<'OBJ'
+          o triangle
+          v 0 0 0
+          v 1 0 0
+          v 0 1 0
+          f 1 2 3
+          OBJ
+          python3 -B backend/editor.py new --workspace "$smoke_dir/workspace" --name CI --vehicle custom
+          python3 -B backend/editor.py import "$smoke_dir/triangle.obj" --workspace "$smoke_dir/workspace"
+          python3 -B backend/editor.py validate --workspace "$smoke_dir/workspace"
+          python3 -B backend/editor.py save --workspace "$smoke_dir/workspace" --output "$smoke_dir/ci.xovmodel"
+          python3 -B backend/editor.py export --workspace "$smoke_dir/workspace" --target gazebo --output "$smoke_dir/gazebo"

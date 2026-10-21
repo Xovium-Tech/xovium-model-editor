@@ -1,0 +1,32 @@
+* text=auto
+*.sh text eol=lf
+*.py text eol=lf
+*.png binary
+*.jpg binary
+*.glb binary
+*.xovmodel binary
+# Source archives contain the editor, converters and build entry points.
+/* export-ignore
+/CMakeLists.txt -export-ignore
+/build.sh -export-ignore
+/run.sh -export-ignore
+/LICENSE -export-ignore
+/README.md -export-ignore
+/THIRD_PARTY.md -export-ignore
+/app -export-ignore
+/backend -export-ignore
+/tools -export-ignore
+/schema -export-ignore
+**/.github/** export-ignore
+**/.gitignore export-ignore
+**/.gitattributes export-ignore
+**/.build/** export-ignore
+**/build/** export-ignore
+**/build-*/** export-ignore
+**/__pycache__/** export-ignore
+*.py[cod] export-ignore
+*.o export-ignore
+*.a export-ignore
+*.so export-ignore
+*.log export-ignore
+compile_commands.json export-ignore

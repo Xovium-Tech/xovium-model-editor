@@ -1,0 +1,325 @@
+{
+  "types": [
+    {
+      "id": "airspeed",
+      "label": "Airspeed",
+      "description": "Air-relative speed measurement.",
+      "default_rate_hz": 50,
+      "default_parameters": {
+        "noise": 0.1
+      },
+      "parameters": [
+        {
+          "key": "noise",
+          "label": "Differential pressure noise (Pa)",
+          "type": "float",
+          "min": 0,
+          "max": 100,
+          "step": 0.01
+        }
+      ]
+    },
+    {
+      "id": "gps",
+      "label": "GPS / GNSS",
+      "description": "Geographic position and velocity.",
+      "default_rate_hz": 10,
+      "default_parameters": {
+        "position_noise": 0.5,
+        "velocity_noise": 0.1
+      },
+      "parameters": [
+        {
+          "key": "position_noise",
+          "label": "Position noise (m)",
+          "type": "float",
+          "min": 0,
+          "max": 1000,
+          "step": 0.1
+        },
+        {
+          "key": "velocity_noise",
+          "label": "Velocity noise (m/s)",
+          "type": "float",
+          "min": 0,
+          "max": 100,
+          "step": 0.01
+        }
+      ]
+    },
+    {
+      "id": "barometer",
+      "label": "Barometer",
+      "description": "Atmospheric pressure measurement.",
+      "default_rate_hz": 50,
+      "default_parameters": {
+        "pressure_noise": 1.0
+      },
+      "parameters": [
+        {
+          "key": "pressure_noise",
+          "label": "Pressure noise (Pa)",
+          "type": "float",
+          "min": 0,
+          "max": 10000,
+          "step": 0.1
+        }
+      ]
+    },
+    {
+      "id": "imu",
+      "label": "IMU",
+      "description": "Acceleration and angular velocity.",
+      "default_rate_hz": 250,
+      "default_parameters": {
+        "accel_noise": 0.02,
+        "gyro_noise": 0.001
+      },
+      "parameters": [
+        {
+          "key": "accel_noise",
+          "label": "Acceleration noise (m/s\u00b2)",
+          "type": "float",
+          "min": 0,
+          "max": 100,
+          "step": 0.001
+        },
+        {
+          "key": "gyro_noise",
+          "label": "Angular velocity noise (rad/s)",
+          "type": "float",
+          "min": 0,
+          "max": 100,
+          "step": 0.0001
+        }
+      ]
+    },
+    {
+      "id": "magnetometer",
+      "label": "Magnetometer",
+      "description": "Local magnetic field measurement.",
+      "default_rate_hz": 100,
+      "default_parameters": {
+        "noise": 5e-08
+      },
+      "parameters": [
+        {
+          "key": "noise",
+          "label": "Magnetic field noise (T)",
+          "type": "float",
+          "min": 0,
+          "max": 100,
+          "step": 1e-09
+        }
+      ]
+    },
+    {
+      "id": "camera",
+      "label": "Camera",
+      "description": "RGB image sensor; optical placement follows the parent link.",
+      "default_rate_hz": 30,
+      "default_parameters": {
+        "width": 1280,
+        "height": 720,
+        "horizontal_fov": 1.0471975512,
+        "near": 0.05,
+        "far": 1000
+      },
+      "parameters": [
+        {
+          "key": "width",
+          "label": "Image width (px)",
+          "type": "int",
+          "min": 1,
+          "max": 16384,
+          "step": 1
+        },
+        {
+          "key": "height",
+          "label": "Image height (px)",
+          "type": "int",
+          "min": 1,
+          "max": 16384,
+          "step": 1
+        },
+        {
+          "key": "horizontal_fov",
+          "label": "Horizontal field of view (rad)",
+          "type": "float",
+          "min": 0.01,
+          "max": 3.1415926535,
+          "step": 0.01
+        },
+        {
+          "key": "near",
+          "label": "Near clip (m)",
+          "type": "float",
+          "min": 0.001,
+          "max": 100000,
+          "step": 0.01
+        },
+        {
+          "key": "far",
+          "label": "Far clip (m)",
+          "type": "float",
+          "min": 0.002,
+          "max": 1000000,
+          "step": 1
+        }
+      ]
+    },
+    {
+      "id": "depth_camera",
+      "label": "Depth camera",
+      "description": "Per-pixel depth measurement.",
+      "default_rate_hz": 30,
+      "default_parameters": {
+        "width": 640,
+        "height": 480,
+        "horizontal_fov": 1.0471975512,
+        "near": 0.1,
+        "far": 100
+      },
+      "parameters": [
+        {
+          "key": "width",
+          "label": "Image width (px)",
+          "type": "int",
+          "min": 1,
+          "max": 16384,
+          "step": 1
+        },
+        {
+          "key": "height",
+          "label": "Image height (px)",
+          "type": "int",
+          "min": 1,
+          "max": 16384,
+          "step": 1
+        },
+        {
+          "key": "horizontal_fov",
+          "label": "Horizontal field of view (rad)",
+          "type": "float",
+          "min": 0.01,
+          "max": 3.1415926535,
+          "step": 0.01
+        },
+        {
+          "key": "near",
+          "label": "Near clip (m)",
+          "type": "float",
+          "min": 0.001,
+          "max": 100000,
+          "step": 0.01
+        },
+        {
+          "key": "far",
+          "label": "Far clip (m)",
+          "type": "float",
+          "min": 0.002,
+          "max": 1000000,
+          "step": 1
+        }
+      ]
+    },
+    {
+      "id": "lidar",
+      "label": "LiDAR",
+      "description": "Angular range scan with horizontal and vertical samples.",
+      "default_rate_hz": 20,
+      "default_parameters": {
+        "horizontal_samples": 720,
+        "horizontal_min_angle": -3.1415926535,
+        "horizontal_max_angle": 3.1415926535,
+        "vertical_samples": 1,
+        "vertical_min_angle": 0,
+        "vertical_max_angle": 0,
+        "min_range": 0.1,
+        "max_range": 100
+      },
+      "parameters": [
+        {
+          "key": "horizontal_samples",
+          "label": "Horizontal samples",
+          "type": "int",
+          "min": 1,
+          "max": 65536,
+          "step": 1
+        },
+        {
+          "key": "horizontal_min_angle",
+          "label": "Horizontal minimum (rad)",
+          "type": "float",
+          "min": -6.2831853072,
+          "max": 6.2831853072,
+          "step": 0.01
+        },
+        {
+          "key": "horizontal_max_angle",
+          "label": "Horizontal maximum (rad)",
+          "type": "float",
+          "min": -6.2831853072,
+          "max": 6.2831853072,
+          "step": 0.01
+        },
+        {
+          "key": "vertical_samples",
+          "label": "Vertical samples",
+          "type": "int",
+          "min": 1,
+          "max": 4096,
+          "step": 1
+        },
+        {
+          "key": "vertical_min_angle",
+          "label": "Vertical minimum (rad)",
+          "type": "float",
+          "min": -1.5707963268,
+          "max": 1.5707963268,
+          "step": 0.01
+        },
+        {
+          "key": "vertical_max_angle",
+          "label": "Vertical maximum (rad)",
+          "type": "float",
+          "min": -1.5707963268,
+          "max": 1.5707963268,
+          "step": 0.01
+        },
+        {
+          "key": "min_range",
+          "label": "Minimum range (m)",
+          "type": "float",
+          "min": 0,
+          "max": 100000,
+          "step": 0.01
+        },
+        {
+          "key": "max_range",
+          "label": "Maximum range (m)",
+          "type": "float",
+          "min": 0.001,
+          "max": 1000000,
+          "step": 1
+        }
+      ]
+    },
+    {
+      "id": "contact",
+      "label": "Contact",
+      "description": "Contact detection for a named collision on the parent link.",
+      "default_rate_hz": 100,
+      "default_parameters": {
+        "collision": ""
+      },
+      "parameters": [
+        {
+          "key": "collision",
+          "label": "Collision name",
+          "type": "string"
+        }
+      ]
+    }
+  ]
+}
